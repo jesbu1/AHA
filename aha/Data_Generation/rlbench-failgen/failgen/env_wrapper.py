@@ -177,6 +177,8 @@ class FailGenEnvWrapper:
             wrist=[],
         )
 
+        self._language_descriptions = []
+
         if self._record:
             self._cam_cinematic_base = Dummy("cam_cinematic_base")
             self._cam_base_start_pose = self._cam_cinematic_base.get_pose()
@@ -244,7 +246,7 @@ class FailGenEnvWrapper:
         self._keypoints_frames_dict.clear()
         self._cache_video.clear()
         self._manager.on_reset()
-        self._task_env.reset()
+        self._language_descriptions, _ = self._task_env.reset()
 
         self._cache_cameras = dict(
             front=[],
@@ -325,6 +327,18 @@ class FailGenEnvWrapper:
             demo.keypoints_frames_dict = self._keypoints_frames_dict.copy()
         return demo, success
 
+    @property
+    def language_description(self) -> str:
+        """
+        Get the language description for the current task variation.
+        
+        Returns:
+            str: The first language description from the current variation.
+        """
+        if self._language_descriptions and len(self._language_descriptions) > 0:
+            return self._language_descriptions[0]
+        return ""
+
     def save_failure(self, ep_idx: int, demo: Demo) -> None:
         """
         Save a failure demonstration to disk.
@@ -336,7 +350,7 @@ class FailGenEnvWrapper:
             demo (Demo): The demonstration instance to be saved.
         """
         task_savepath = os.path.join(
-            self._config.data.save_path, self._task_name
+            self._config.data.save_path, self._task_name, self.language_description
         )
         check_and_make(task_savepath)
 
@@ -363,13 +377,17 @@ class FailGenEnvWrapper:
             demo (Demo): The demonstration instance to be saved.
             wp_idx (int, optional): Waypoint index if the failure is associated with a specific waypoint. Defaults to -1.
         """
+        # Use the base save path (respecting custom path if provided)
+        base_save_path = self._custom_savepath if self._custom_savepath else self._config.data.save_path
+        
         if wp_idx == -1:
             task_savepath = os.path.join(
-                self._config.data.save_path, self._task_name, fail_type
+                base_save_path, self.language_description, self._task_name, fail_type
             )
         else:
             task_savepath = os.path.join(
-                self._config.data.save_path,
+                base_save_path,
+                self.language_description,
                 self._task_name,
                 f"{fail_type}_wp{wp_idx}",
             )
@@ -418,14 +436,16 @@ class FailGenEnvWrapper:
         if self._save_keyframes_only:
             return
 
+        # Use the base save path (respecting custom path if provided)
+        base_save_path = self._custom_savepath if self._custom_savepath else self._config.data.save_path
+        
         if wp_idx == -1:
             task_savepath = os.path.join(
-                self._savepath, fail_type
+                base_save_path, self.language_description, fail_type
             )
         else:
             task_savepath = os.path.join(
-                self._savepath,
-                f"{fail_type}_wp{wp_idx}",
+                base_save_path, self.language_description, f"{fail_type}_wp{wp_idx}",
             )
         check_and_make(task_savepath)
 
