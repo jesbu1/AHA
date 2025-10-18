@@ -3,6 +3,7 @@
 # Licensed under the NVIDIA Source Code License [see LICENSE for details].
 
 import argparse
+from tqdm import tqdm
 from multiprocessing import Process
 from typing import List, Optional
 
@@ -126,7 +127,7 @@ def run_get_failures(
     assert fail_type == "none" or target_fail_obj is not None
 
     if fail_type == "none":
-        for i in range(num_episodes):
+        for i in tqdm(range(num_episodes), desc=f"Collecting success demos for task: {task_name}"):
             env_wrapper.reset()
             demo = env_wrapper.get_success()
             attempts = max_tries
@@ -145,7 +146,7 @@ def run_get_failures(
         try:
             target_fail_obj.change_waypoint_fail_name(f"waypoint{wp_idx}")
             print(f"Triying to collect from waypoint {wp_idx}")
-            for i in range(num_episodes):
+            for i in tqdm(range(num_episodes), desc=f"Collecting failure demos for task: {task_name}, waypoint: {wp_idx}"):
                 env_wrapper.reset()
                 attempts = max_tries
                 while attempts > 0:
