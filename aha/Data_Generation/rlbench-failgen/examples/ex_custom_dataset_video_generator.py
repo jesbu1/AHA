@@ -129,6 +129,7 @@ def run_get_failures(
         for i in range(num_episodes):
             env_wrapper.reset()
             demo = env_wrapper.get_success()
+            attempts = max_tries
             while attempts > 0:
                 if demo is not None:
                     env_wrapper.save_cameras(i, fail_type)
