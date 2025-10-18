@@ -119,15 +119,15 @@ fi
 SAVE_PATH="/scr/jesse/aha_data"
 NUMBER_OF_EPISODES=20
 MAX_TRIES=10
-for failure in "${failures[@]}"
-do
+#for failure in "${failures[@]}"
+#do
     for task in "${tasks[@]}"
     do
         python aha/Data_Generation/rlbench-failgen/examples/ex_custom_dataset_video_generator.py \
             --task $task \
             --savepath "$SAVE_PATH" \
             --max_tries $MAX_TRIES \
-            --failtype $failure \
+            --multiprocessing \
             --episodes $NUMBER_OF_EPISODES
     done
-done
+#done

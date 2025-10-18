@@ -26,6 +26,7 @@ from failgen.fail_translation import (
 )
 
 FAILURES_LIST: List[str] = [
+    "none",
     GraspFailure.FAILURE_TYPE,
     SlipFailure.FAILURE_TYPE,
     RotationXFailure.FAILURE_TYPE,
