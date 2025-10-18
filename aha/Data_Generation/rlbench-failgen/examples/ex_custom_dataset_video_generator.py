@@ -129,11 +129,12 @@ def run_get_failures(
         for i in range(num_episodes):
             env_wrapper.reset()
             demo = env_wrapper.get_success()
-            if demo is not None:
-                env_wrapper.save_cameras(i, fail_type)
-                break
-            else:
-                attempts -= 1
+            while attempts > 0:
+                if demo is not None:
+                    env_wrapper.save_cameras(i, fail_type)
+                    break
+                else:
+                    attempts -= 1
         return
 
     potential_waypoints = target_fail_obj.waypoints_indices
