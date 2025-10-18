@@ -89,24 +89,26 @@ def run_get_failures(
         record=False,
         save_data=True,
         save_path=save_path,
-        save_keyframes_only=True,
+        save_keyframes_only=False,
     )
 
-    # Set current failure type
-    has_failtype = False
-    target_fail_obj: Optional[IFailure] = None
-    for fail_obj in env_wrapper.manager._failures:
-        if fail_obj.failure_type == fail_type:
-            fail_obj.set_enabled(True)
-            has_failtype = True
-            target_fail_obj = fail_obj
-        else:
-            fail_obj.set_enabled(False)
+    if fail_type != "none":
+        # Set current failure type
+        has_failtype = False
+        target_fail_obj: Optional[IFailure] = None
+        breakpoint()
+        for fail_obj in env_wrapper.manager._failures:
+            if fail_obj.failure_type == fail_type:
+                fail_obj.set_enabled(True)
+                has_failtype = True
+                target_fail_obj = fail_obj
+            else:
+                fail_obj.set_enabled(False)
 
-    if not has_failtype:
-        print(f"Skipping task {task_name} and fail {fail_type}")
-        env_wrapper.shutdown()
-        return
+        if not has_failtype:
+            print(f"Skipping task {task_name} and fail {fail_type}")
+            env_wrapper.shutdown()
+            return
 
     print(
         f"Starting demo collection for task: {task_name} and fail: {fail_type}"
@@ -136,7 +138,16 @@ def run_get_failures(
         )
         return
 
-    assert target_fail_obj is not None
+    assert fail_type == "none" or target_fail_obj is not None
+    if fail_type == "none":
+        for i in range(num_episodes):
+            env_wrapper.reset()
+            demo = env_wrapper.get_success()
+            if demo is not None:
+                env_wrapper.save_keyframe_data(i, fail_type)
+                break
+            else:
+                attempts -= 1
     potential_waypoints = target_fail_obj.waypoints_indices
 
     for wp_idx in potential_waypoints:

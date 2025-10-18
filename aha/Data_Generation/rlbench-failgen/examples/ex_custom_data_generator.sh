@@ -4,6 +4,20 @@ if [ $# -eq 0 ]
   then
     echo "Collecting demos for all tasks"
 
+    failures=(
+        "none"
+        "grasp"
+        "slip"
+        "rotation_x"
+        "rotation_y"
+        "rotation_z"
+        "translation_x"
+        "translation_y"
+        "translation_z"
+        "no_rotation"
+        "wrong_sequence"
+        "wrong_object"
+    )
 
     tasks=(
         "basketball_in_hoop"

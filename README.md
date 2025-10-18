@@ -1,3 +1,14 @@
+# Custom data generation for Reward FM
+
+After setting up the environment, run the following commands to generate the data:
+```bash
+bash aha/Data_Generation/rlbench-failgen/examples/ex_custom_dataset_video_generator.sh
+```
+
+Double check the folder path in the bash script to change it to your desired path.
+
+
+
 # 🤖 AHA: A Vision-Language Model for Detecting and Reasoning over Failures in Robotic Manipulation
 
 *Precise failure reasoning and detection for robotic manipulation*

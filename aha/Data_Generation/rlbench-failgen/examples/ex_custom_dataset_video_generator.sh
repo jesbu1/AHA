@@ -4,6 +4,21 @@ if [ $# -eq 0 ]
   then
     echo "Collecting videos for all tasks"
 
+    failures=(
+        "none"
+        "grasp"
+        "slip"
+        "rotation_x"
+        "rotation_y"
+        "rotation_z"
+        "translation_x"
+        "translation_y"
+        "translation_z"
+        "no_rotation"
+        "wrong_sequence"
+        "wrong_object"
+    )
+
 
     tasks=(
         "basketball_in_hoop"
@@ -101,13 +116,18 @@ else
     tasks=("$1")
 fi
 
-SAVE_PATH="/tmp/data/rlbench_data"
-NUMBER_OF_EPISODES=100
-
-for task in "${tasks[@]}"
+SAVE_PATH="/scr/jesse/aha_data"
+NUMBER_OF_EPISODES=20
+MAX_TRIES=10
+for failure in "${failures[@]}"
 do
-    python examples/ex_custom_dataset_video_generator.py \
-        --task $task \
-        --savepath "$SAVE_PATH" \
-        --episodes $NUMBER_OF_EPISODES
+    for task in "${tasks[@]}"
+    do
+        python aha/Data_Generation/rlbench-failgen/examples/ex_custom_dataset_video_generator.py \
+            --task $task \
+            --savepath "$SAVE_PATH" \
+            --max_tries $MAX_TRIES \
+            --failtype $failure \
+            --episodes $NUMBER_OF_EPISODES
+    done
 done

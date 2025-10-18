@@ -56,20 +56,21 @@ def run_get_failures(
     )
 
     # Set current failure type
-    has_failtype = False
-    target_fail_obj: Optional[IFailure] = None
-    for fail_obj in env_wrapper.manager._failures:
-        if fail_obj.failure_type == fail_type:
-            fail_obj.set_enabled(True)
-            has_failtype = True
-            target_fail_obj = fail_obj
-        else:
-            fail_obj.set_enabled(False)
+    if fail_type != "none":
+        has_failtype = False
+        target_fail_obj: Optional[IFailure] = None
+        for fail_obj in env_wrapper.manager._failures:
+            if fail_obj.failure_type == fail_type:
+                fail_obj.set_enabled(True)
+                has_failtype = True
+                target_fail_obj = fail_obj
+            else:
+                fail_obj.set_enabled(False)
 
-    if not has_failtype:
-        print(f"Skipping task {task_name} and fail {fail_type}")
-        env_wrapper.shutdown()
-        return
+        if not has_failtype:
+            print(f"Skipping task {task_name} and fail {fail_type}")
+            env_wrapper.shutdown()
+            return
 
     print(
         f"Starting demo collection for task: {task_name} and fail: {fail_type}"
@@ -122,36 +123,52 @@ def run_get_failures(
         )
         return
 
-    assert target_fail_obj is not None
-    potential_waypoints = target_fail_obj.waypoints_indices
+    assert fail_type == "none" or target_fail_obj is not None
 
-    for wp_idx in potential_waypoints:
-        target_fail_obj.change_waypoint_fail_name(f"waypoint{wp_idx}")
-        print(f"Triying to collect from waypoint {wp_idx}")
+    if fail_type == "none":
         for i in range(num_episodes):
             env_wrapper.reset()
-            attempts = max_tries
-            while attempts > 0:
-                demo, success = env_wrapper.get_failure()
-                if demo is not None and not success:
-                    env_wrapper.save_cameras(i, fail_type, wp_idx)
-                    #### env_wrapper.save_failure_ext(i, fail_type, demo, wp_idx)
-                    #### env_wrapper.save_video(
-                    ####     f"vid_{task_name}_{fail_type}_{i}.mp4"
-                    #### )
-                    break
-                else:
-                    attempts -= 1
-            if attempts <= 0:
-                print(
-                    f"Got an issue with task: {task_name}, failure: {fail_type}"
-                )
+            demo = env_wrapper.get_success()
+            if demo is not None:
+                env_wrapper.save_cameras(i, fail_type)
+                break
             else:
-                print(f"Saved episode {i+1} / {num_episodes}")
-        print(
-            f"Saved {num_episodes} for task {task_name}, failure: {fail_type}, "
-            + f"waypoint-index: {wp_idx}"
-        )
+                attempts -= 1
+        return
+
+    potential_waypoints = target_fail_obj.waypoints_indices
+    
+
+    for wp_idx in potential_waypoints:
+        try:
+            target_fail_obj.change_waypoint_fail_name(f"waypoint{wp_idx}")
+            print(f"Triying to collect from waypoint {wp_idx}")
+            for i in range(num_episodes):
+                env_wrapper.reset()
+                attempts = max_tries
+                while attempts > 0:
+                    demo, success = env_wrapper.get_failure()
+                    if demo is not None and not success:
+                        env_wrapper.save_cameras(i, fail_type, wp_idx)
+                        #### env_wrapper.save_failure_ext(i, fail_type, demo, wp_idx)
+                        #### env_wrapper.save_video(
+                        ####     f"vid_{task_name}_{fail_type}_{i}.mp4"
+                        #### )
+                        break
+                    else:
+                        attempts -= 1
+                if attempts <= 0:
+                    print(
+                        f"Got an issue with task: {task_name}, failure: {fail_type}"
+                    )
+                else:
+                    print(f"Saved episode {i+1} / {num_episodes}")
+            print(
+                f"Saved {num_episodes} for task {task_name}, failure: {fail_type}, "
+                + f"waypoint-index: {wp_idx}"
+            )
+        except Exception as e:
+            print(f"Error collecting from waypoint {wp_idx}: {e}")
 
     env_wrapper.shutdown()
 
