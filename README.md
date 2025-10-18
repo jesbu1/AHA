@@ -2,6 +2,9 @@
 
 After setting up the environment, run the following commands to generate the data:
 ```bash
+# nohup and disown is important for the X server to keep running in the background
+sudo nohup X :99 & disown # this is the way to start the x server for headless rendering
+
 bash aha/Data_Generation/rlbench-failgen/examples/ex_custom_dataset_video_generator.sh
 ```
 
